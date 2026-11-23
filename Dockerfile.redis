@@ -1,0 +1,5 @@
+# upstream: none Official Redis library image that Grovs uses for its job queues and caches, not the Grovs app
+FROM redis:7-alpine@sha256:7f7d30b7fdd09467bac58198a1f166dd69789d348d4fe859cccb20e0cf287fbe
+
+COPY --chmod=755 redis-boot.sh /usr/local/bin/redis-boot.sh
+ENTRYPOINT ["/bin/sh", "/usr/local/bin/redis-boot.sh"]

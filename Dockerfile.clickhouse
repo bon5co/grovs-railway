@@ -1,0 +1,6 @@
+# upstream: none Official ClickHouse image that Grovs keeps its analytics events in, not the Grovs app
+FROM clickhouse/clickhouse-server:25.3@sha256:b627d7a9bc0e0c1bac26cdbe9d2fc6316faa29c5d8a174f28f5abd57d0fa6ba2
+
+# CLICKHOUSE_PASSWORD is the one template variable (a generated secret). The database and user name are baked in.
+ENV CLICKHOUSE_DB=grovs_production \
+    CLICKHOUSE_USER=grovs

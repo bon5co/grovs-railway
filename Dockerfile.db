@@ -1,0 +1,9 @@
+# upstream: none Official PostgreSQL library image that Grovs stores its data in, not the Grovs app
+FROM postgres:16-alpine@sha256:f2f98726820d0342055351c6e9d36e705f5bfffb3dd53ff556325114b08afb6d
+
+# POSTGRES_PASSWORD is the one template variable (a generated secret). The user and database name are baked in so the deploy form
+# carries nothing a deployer has to type. The volume mounts at /var/lib/postgresql (the parent of PGDATA), so lost+found never
+# lands inside the data directory.
+ENV POSTGRES_USER=grovs \
+    POSTGRES_DB=grovs_production
+CMD ["postgres", "-c", "max_connections=200"]

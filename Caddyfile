@@ -1,0 +1,48 @@
+{
+	admin off
+}
+
+# Railway injects PORT (8080) and its healthcheck dials that port, so the gateway listens there, on IPv4 and IPv6.
+:{$PORT:8080} {
+	bind 0.0.0.0 [::]
+
+	# Answers by itself, so the deploy goes healthy while the API is still migrating. /up (proxied) is the readiness probe.
+	handle /healthz {
+		respond 200
+	}
+
+	# Railway replaces the inbound X-Forwarded-For, but the edge appends a rotating hop, so the client is the FIRST address.
+	map {http.request.header.X-Forwarded-For} {client_addr} {
+		~^([^,\s]+) {re.1}
+		default {http.request.remote.host}
+	}
+
+	# Grovs picks a controller from the first label of the Host header (api., sdk., go., preview., mcp., <project>.<links domain>).
+	# Railway gives one generated domain per service, so on that domain the gateway sets the label itself: SDK routes go to sdk.,
+	# everything else to api.. A custom domain (wildcard) keeps its own Host and is passed through untouched.
+	@sdk {
+		host {$SERVER_HOST}
+		path /api/v1/sdk/*
+	}
+	handle @sdk {
+		reverse_proxy 127.0.0.1:3000 {
+			header_up Host sdk.{$SERVER_HOST}
+			header_up X-Forwarded-For {client_addr}
+			header_up X-Forwarded-Proto https
+		}
+	}
+	@api host {$SERVER_HOST}
+	handle @api {
+		reverse_proxy 127.0.0.1:3000 {
+			header_up Host api.{$SERVER_HOST}
+			header_up X-Forwarded-For {client_addr}
+			header_up X-Forwarded-Proto https
+		}
+	}
+	handle {
+		reverse_proxy 127.0.0.1:3000 {
+			header_up X-Forwarded-For {client_addr}
+			header_up X-Forwarded-Proto https
+		}
+	}
+}

@@ -1,0 +1,6 @@
+# upstream: grovs-io/dashboard
+FROM ghcr.io/grovs-io/dashboard:3.0.1@sha256:f72294be7c417112a3ec4f8d1150a55ab0aa272e09f8f909012589b030a20584
+
+# The Next.js server reads PORT from Railway (8080) and listens on every interface, IPv4 and IPv6. API_URL, OAUTH_CLIENT_UID,
+# OAUTH_CLIENT_SECRET and TRUSTED_PROXY_SECRET come from template variables that reference the app service.
+ENV HOSTNAME=::
