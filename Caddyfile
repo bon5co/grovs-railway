@@ -27,6 +27,7 @@
 	handle @sdk {
 		reverse_proxy 127.0.0.1:3000 {
 			header_up Host sdk.{$SERVER_HOST}
+			header_up X-Forwarded-Host sdk.{$SERVER_HOST}
 			header_up X-Forwarded-For {client_addr}
 			header_up X-Forwarded-Proto https
 		}
@@ -35,6 +36,7 @@
 	handle @api {
 		reverse_proxy 127.0.0.1:3000 {
 			header_up Host api.{$SERVER_HOST}
+			header_up X-Forwarded-Host api.{$SERVER_HOST}
 			header_up X-Forwarded-For {client_addr}
 			header_up X-Forwarded-Proto https
 		}

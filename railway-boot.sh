@@ -10,7 +10,6 @@ set -eu
 : "${REDIS_PASSWORD:?REDIS_PASSWORD is not set}"
 : "${CLICKHOUSE_PASSWORD:?CLICKHOUSE_PASSWORD is not set}"
 : "${RAILWAY_PUBLIC_DOMAIN:?RAILWAY_PUBLIC_DOMAIN is not set}"
-: "${REACT_HOST:?REACT_HOST is not set}"
 
 if [ "$(id -u)" != 0 ]; then
   echo "[grovs] ERROR: must start as root (set RAILWAY_RUN_UID=0); uid is $(id -u)" >&2
@@ -22,6 +21,13 @@ mkdir -p "$DATA" /tmp/caddy-data /tmp/caddy-config /app/tmp /app/log
 chown -R 1000:1000 "$DATA" /tmp/caddy-data /tmp/caddy-config /app/tmp /app/log
 echo "[grovs] volume $DATA owner=$(stat -c %u:%g "$DATA") writable=$(setpriv --reuid=1000 --regid=1000 --init-groups sh -c "test -w $DATA && echo yes || echo NO")"
 
+# Railway resolves the dashboard address only once the dashboard service exists. A template deploy creates all services together, so
+# it is set there; the fallback keeps a project that is built service by service from crash-looping on its first deploy.
+if [ -z "${REACT_HOST:-}" ]; then
+  echo "[grovs] WARN: REACT_HOST is empty (dashboard service not created yet); the dashboard origin is unset until the next deploy" >&2
+  REACT_HOST="dashboard.invalid"
+fi
+export REACT_HOST
 export SERVER_HOST="$RAILWAY_PUBLIC_DOMAIN"
 export GATEWAY_HOST="$RAILWAY_PUBLIC_DOMAIN"
 export DOMAIN_LIVE="$SERVER_HOST"
